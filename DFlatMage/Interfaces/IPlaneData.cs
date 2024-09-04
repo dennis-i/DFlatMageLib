@@ -9,4 +9,8 @@ public interface IPlaneData : IDisposable
         8 => new PlaneData8bit(nRows, nCols),
         _ => new NonSupportedPlaneData()
     };
+
+
+    int GetPix(int row, int col);
+    void SetPix(int row, int col, int val);
 }
