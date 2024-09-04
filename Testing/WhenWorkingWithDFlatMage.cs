@@ -20,5 +20,7 @@ public class WhenWorkingWithDFlatMage
     {
         using IImage img = IImage.Create(nPlanes, nRows, nCols, bpp);
         Assert.Equal(nPlanes, img.NumPlanes);
+        Assert.Equal(nRows, img.Height);
+        Assert.Equal(nCols, img.Width);
     }
 }

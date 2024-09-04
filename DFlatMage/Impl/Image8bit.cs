@@ -11,11 +11,18 @@ internal class Image8bit : IImage
         {
             _planes[i] = IPlaneData.Create(nRows, nCols, 8);
         }
+        _nRows = nRows;
+        _nCols = nCols;
     }
-
+    private readonly int _nRows;
+    private readonly int _nCols;
     private readonly IPlaneData[] _planes;
 
     public int NumPlanes => _planes.Length;
+
+    public int Height => _nRows;
+
+    public int Width => _nCols;
 
     public void Dispose()
     {
