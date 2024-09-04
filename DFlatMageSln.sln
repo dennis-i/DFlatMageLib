@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35027.167
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DFlatMage", "DFlatMage\DFlatMage.csproj", "{34D52282-1557-4AE9-B521-C4F8243EA943}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.csproj", "{2C44DE5E-65F0-42EF-A58E-9FC076C51CB6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{34D52282-1557-4AE9-B521-C4F8243EA943}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34D52282-1557-4AE9-B521-C4F8243EA943}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34D52282-1557-4AE9-B521-C4F8243EA943}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34D52282-1557-4AE9-B521-C4F8243EA943}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C44DE5E-65F0-42EF-A58E-9FC076C51CB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C44DE5E-65F0-42EF-A58E-9FC076C51CB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C44DE5E-65F0-42EF-A58E-9FC076C51CB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C44DE5E-65F0-42EF-A58E-9FC076C51CB6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AD179F6B-4A39-47D1-87D6-32250D6C2BA8}
+	EndGlobalSection
+EndGlobal
