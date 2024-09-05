@@ -22,6 +22,7 @@ public class WhenWorkingWithDFlatMage
         Assert.Equal(nPlanes, img.NumPlanes);
         Assert.Equal(nRows, img.Height);
         Assert.Equal(nCols, img.Width);
+        Assert.Equal(bpp, img.Bpp);
     }
 
     [Theory]
@@ -43,7 +44,7 @@ public class WhenWorkingWithDFlatMage
             File.Delete(filePath);
 
 
-        const int size = 1613;
+        const int size = 117;
         using IImage img = IImage.Create(1, size, size, 8);
 
         for (int i = 0; i < size; ++i)
@@ -69,18 +70,33 @@ public class WhenWorkingWithDFlatMage
         if (File.Exists(filePath))
             File.Delete(filePath);
 
-
-
-
         for (int i = 0; i < size; ++i)
         {
             img.SetPix(0, i, i, 200);
         }
-
-
-
-
         img.Save(filePath, ImageFormatType.Raw);
         Assert.True(File.Exists(filePath));
+    }
+
+    [Fact]
+    public void DrawLine()
+    {
+        using IImage img = IImage.Create(1, 100, 100, 8);
+
+        img.DrawLine(0, 10, 1, 50, 50, 200);
+        img.Save("line.bmp", ImageFormatType.Bitmap);
+    }
+
+    [Fact]
+    public void DrawRectangle()
+    {
+        using IImage img = IImage.Create(1, 100, 100, 8);
+
+        img.DrawLine(0, 10, 10, 10, 50, 200);
+        img.DrawLine(0, 40, 20, 40, 40, 200);
+
+        img.DrawLine(0, 10, 20, 40, 20, 200);
+        img.DrawLine(0, 10, 50, 40, 40, 200);
+        img.Save("rect.bmp", ImageFormatType.Bitmap);
     }
 }

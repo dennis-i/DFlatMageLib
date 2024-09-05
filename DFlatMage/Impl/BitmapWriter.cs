@@ -3,11 +3,11 @@ using System.Text;
 
 namespace DFlatMage.Impl;
 
-internal struct BitmapColorTable
+internal readonly struct BitmapColorTable
 {
-    public byte R { get; set; }
-    public byte G { get; set; }
-    public byte B { get; set; }
+    public byte R { get; init; }
+    public byte G { get; init; }
+    public byte B { get; init; }
 
     public int ToInt32 => BitConverter.ToInt32([R, G, B, 0]);
 }
@@ -81,15 +81,28 @@ internal class BitmapHeader
 
 internal class BitmapWriter : IImageWriter
 {
-
+    const int Resolution = 72;
     static readonly Func<int, int, int> Align = (what, to) => (what + to - 1) / to * to;
     static readonly Func<int, int> PixPerInchToPixPerM = dpi => (int)Math.Round(dpi / 25.4) * 1000;
 
     public void Write(string filePath, IImage image)
     {
-        const int Resolution = 72;
+
+        Action<string, IImage> writeMethod = (image.Bpp, image.NumPlanes) switch
+        {
+            (8, 1) => GrayscaleWrite,
+            _ => throw new NotImplementedException()
+        };
+
+        writeMethod(filePath, image);
+    }
 
 
+
+
+
+    private void GrayscaleWrite(string filePath, IImage image)
+    {
         int rowSize = image.Width;
 
         int numBytesForRow = Align(rowSize, 4);
@@ -131,7 +144,5 @@ internal class BitmapWriter : IImageWriter
             stream.Write(rowBuff);
             stream.Position += padding;
         }
-
-
     }
 }

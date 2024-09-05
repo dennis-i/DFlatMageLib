@@ -7,7 +7,8 @@ public interface IImageWriter
     static IImageWriter GetWriter(ImageFormatType type) => type switch
     {
         ImageFormatType.Bitmap => new BitmapWriter(),
-        ImageFormatType.Raw => new RawWriter()
+        ImageFormatType.Raw => new RawWriter(),
+        _ => throw new NotImplementedException()
     };
 
 
