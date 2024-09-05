@@ -39,7 +39,48 @@ public class WhenWorkingWithDFlatMage
     {
         const string filePath = "img.bmp";
 
-        using IImage img = IImage.Create(1, 100, 100, 8);
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+
+
+        const int size = 800;
+        using IImage img = IImage.Create(1, size, size, 8);
+
+        for (int i = 0; i < size; ++i)
+        {
+            img.SetPix(0, i, i, 200);
+        }
+
+
         img.Save(filePath, ImageFormatType.Bitmap);
+        Assert.True(File.Exists(filePath));
+    }
+
+
+    [Fact]
+    public void SaveAsRaw()
+    {
+
+        const int size = 800;
+        using IImage img = IImage.Create(1, size, size, 8);
+
+        string filePath = $"img_{img.NumPlanes}_{img.Width}x{img.Height}.data";
+
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+
+
+
+
+        for (int i = 0; i < size; ++i)
+        {
+            img.SetPix(0, i, i, 200);
+        }
+
+
+
+
+        img.Save(filePath, ImageFormatType.Raw);
+        Assert.True(File.Exists(filePath));
     }
 }

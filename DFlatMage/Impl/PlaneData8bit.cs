@@ -23,4 +23,8 @@ internal class PlaneData8bit : IPlaneData
 
     public void SetPix(int row, int col, int val) => _data[_stride * row + col] = (byte)val;
 
+    public Span<byte> GetRow(int row) => _data.AsSpan(_stride * row, _stride);
+
+    public Span<byte> GetData() => _data;
+
 }

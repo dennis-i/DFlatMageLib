@@ -9,7 +9,17 @@ internal class NonSupportedPlaneData : IPlaneData
         
     }
 
+    public Span<byte> GetData()
+    {
+        throw new NotImplementedException();
+    }
+
     public int GetPix(int row, int col)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Span<byte> GetRow(int row)
     {
         throw new NotImplementedException();
     }

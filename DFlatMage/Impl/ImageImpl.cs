@@ -48,6 +48,11 @@ internal class ImageImpl : IImage
         writer.Write(filePath, this);
 
     }
+
+    public Span<byte> GetRow(int plane, int row) => _planes[plane].GetRow(row);
+
+    public Span<byte> GetPlane(int plane)=> _planes[plane].GetData();
+   
 }
 
 
