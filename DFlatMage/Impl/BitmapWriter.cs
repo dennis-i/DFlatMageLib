@@ -23,7 +23,7 @@ internal class BitmapHeader
         get
         {
 
-            var result = new byte[HeaderSize + ColorTable.Length << 2];
+            var result = new byte[HeaderSize + (ColorTable.Length << 2)];
             int offset = 2;
 
             Action<int> nextInt32 = v =>

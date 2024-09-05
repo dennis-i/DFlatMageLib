@@ -43,7 +43,7 @@ public class WhenWorkingWithDFlatMage
             File.Delete(filePath);
 
 
-        const int size = 800;
+        const int size = 1613;
         using IImage img = IImage.Create(1, size, size, 8);
 
         for (int i = 0; i < size; ++i)
