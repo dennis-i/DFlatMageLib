@@ -1,10 +1,11 @@
-﻿using DFlatMage.Impl;
+﻿using DFlatMage.Enums;
+using DFlatMage.Impl;
 
 namespace DFlatMage.Interfaces;
 
 public interface IImage : IDisposable
 {
-    static IImage Create(int nPlanes, int nRows, int nCols, int bpp) => new ImageImpl(nPlanes, nRows, nCols, bpp);
+    static IImage Create(int nPlanes, int nRows, int nCols, Bpp bpp) => new ImageImpl(nPlanes, nRows, nCols, (int)bpp);
 
     int NumPlanes { get; }
     int Height { get; }

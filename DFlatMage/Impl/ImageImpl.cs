@@ -1,4 +1,5 @@
-﻿using DFlatMage.Interfaces;
+﻿using DFlatMage.Enums;
+using DFlatMage.Interfaces;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 

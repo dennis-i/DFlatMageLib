@@ -1,4 +1,5 @@
-﻿using DFlatMage.Impl;
+﻿using DFlatMage.Enums;
+using DFlatMage.Impl.Writers;
 
 namespace DFlatMage.Interfaces;
 

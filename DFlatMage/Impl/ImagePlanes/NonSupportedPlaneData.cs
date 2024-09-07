@@ -1,12 +1,12 @@
 ﻿using DFlatMage.Interfaces;
 
-namespace DFlatMage.Impl;
+namespace DFlatMage.Impl.ImagePlanes;
 
 internal class NonSupportedPlaneData : IPlaneData
 {
     public void Dispose()
     {
-        
+
     }
 
     public Span<byte> GetData()

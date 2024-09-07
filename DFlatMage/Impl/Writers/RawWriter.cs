@@ -1,6 +1,6 @@
 ﻿using DFlatMage.Interfaces;
 
-namespace DFlatMage.Impl;
+namespace DFlatMage.Impl.Writers;
 
 internal class RawWriter : IImageWriter
 {

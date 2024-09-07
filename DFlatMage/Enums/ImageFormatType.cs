@@ -1,4 +1,4 @@
-﻿namespace DFlatMage.Interfaces;
+﻿namespace DFlatMage.Enums;
 
 public enum ImageFormatType
 {

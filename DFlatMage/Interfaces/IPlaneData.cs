@@ -1,4 +1,4 @@
-﻿using DFlatMage.Impl;
+﻿using DFlatMage.Impl.ImagePlanes;
 
 namespace DFlatMage.Interfaces;
 

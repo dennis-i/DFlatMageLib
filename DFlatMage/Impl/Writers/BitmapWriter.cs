@@ -1,7 +1,7 @@
 ﻿using DFlatMage.Interfaces;
 using System.Text;
 
-namespace DFlatMage.Impl;
+namespace DFlatMage.Impl.Writers;
 
 internal readonly struct BitmapColorTable
 {
