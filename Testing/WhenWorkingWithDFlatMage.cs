@@ -1,4 +1,5 @@
-﻿using DFlatMage.Enums;
+﻿using DFlatMage.Common;
+using DFlatMage.Enums;
 using DFlatMage.Interfaces;
 
 namespace Testing;
@@ -82,10 +83,19 @@ public class WhenWorkingWithDFlatMage
     [Fact]
     public void DrawLine()
     {
-        using IImage img = IImage.Create(1, 100, 100, Bpp.Bpp8);
+        const int p = 0;
+        const int val = 100;
 
-        img.DrawLine(0, 10, 1, 50, 50, 200);
-        img.Save("line.bmp", ImageFormatType.Bitmap);
+        using IImage img1 = IImage.Create(1, 100, 100, Bpp.Bpp8);
+        img1.DrawLine(p, new Point(50, 50), new Point(10, 10), val);
+
+        using IImage img2 = IImage.Create(1, 100, 100, Bpp.Bpp8);
+        img2.DrawLine(p, new Point(10, 10), new Point(50, 50), val);
+
+        img1.Save("lines1.bmp", ImageFormatType.Bitmap);
+        img2.Save("lines2.bmp", ImageFormatType.Bitmap);
+
+        Assert.Equal(img1, img2);
     }
 
     [Fact]
@@ -93,11 +103,18 @@ public class WhenWorkingWithDFlatMage
     {
         using IImage img = IImage.Create(1, 100, 100, Bpp.Bpp8);
 
-        img.DrawLine(0, 10, 10, 10, 50, 200);
-        img.DrawLine(0, 40, 20, 40, 40, 200);
-
-        img.DrawLine(0, 10, 20, 40, 20, 200);
-        img.DrawLine(0, 10, 50, 40, 40, 200);
+        img.DrawRect(0, new Rect(5, 5, 20, 40), 200);
         img.Save("rect.bmp", ImageFormatType.Bitmap);
+    }
+
+    [Fact]
+    public void DrawCircle()
+    {
+        using IImage img = IImage.Create(1, 1000, 1000, Bpp.Bpp8);
+
+        Point center = new Point(img.Width >> 1, img.Height >> 1);
+        for (int r = 100; r < 150; ++r)
+            img.DrawCirle(0, center, r, 100 + r);
+        img.Save("circle.bmp", ImageFormatType.Bitmap);
     }
 }
