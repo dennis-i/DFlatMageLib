@@ -43,4 +43,25 @@ public class PixelAccessBm
     {
         return image!.GetPix(0, row, col);
     }
+
+
+    [Benchmark]
+    [Arguments(0, 0)]
+    [Arguments(1, 1)]
+    [Arguments(200, 123)]
+    [Arguments(123, 567)]
+    public void SetPixelUnsafe(int row, int col)
+    {
+        image!.SetPixUnsafe(0, row, col, 200);
+    }
+
+    [Benchmark]
+    [Arguments(0, 0)]
+    [Arguments(1, 1)]
+    [Arguments(200, 123)]
+    [Arguments(123, 567)]
+    public int GetPixelUnsafe(int row, int col)
+    {
+        return image!.GetPixUnsafe(0, row, col);
+    }
 }

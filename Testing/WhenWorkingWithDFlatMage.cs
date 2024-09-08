@@ -1,5 +1,6 @@
 ﻿using DFlatMage.Common;
 using DFlatMage.Enums;
+using DFlatMage.Impl;
 using DFlatMage.Interfaces;
 
 namespace Testing;
@@ -36,6 +37,24 @@ public class WhenWorkingWithDFlatMage
         img.SetPix(p, x, y, val);
         Assert.Equal(val, img.GetPix(p, x, y));
     }
+
+
+    [Fact]
+    public void WrongParametersThrowsException()
+    {
+        using IImage img = IImage.Create(1, 100, 100, Bpp.Bpp8);
+
+        Assert.Throws<OutOfImageRangeException>(() => { img.SetPix(1, 1, 1, 1); });
+        Assert.Throws<OutOfImageRangeException>(() => { img.SetPix(0, 101, 1, 1); });
+        Assert.Throws<OutOfImageRangeException>(() => { img.SetPix(0, 0, -1, 1); });
+        Assert.Throws<OutOfImageRangeException>(() => { img.GetPix(1, 1, 1); });
+        Assert.Throws<OutOfImageRangeException>(() => { img.GetPix(0, 101, 1); });
+        Assert.Throws<OutOfImageRangeException>(() => { img.GetPix(0, 0, -1); });
+        Assert.Throws<OutOfImageRangeException>(() => { img.GetPlane(1); });
+        Assert.Throws<OutOfImageRangeException>(() => { img.GetRow(1, 0); });
+        Assert.Throws<OutOfImageRangeException>(() => { img.GetRow(0, 10324); });
+    }
+
 
     [Fact]
     public void SaveAsBitmap()

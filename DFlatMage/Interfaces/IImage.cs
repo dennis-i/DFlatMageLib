@@ -13,7 +13,9 @@ public interface IImage : IDisposable
     int Width { get; }
     int Bpp { get; }
 
+    int GetPixUnsafe(int plane, int row, int col);
     int GetPix(int plane, int row, int col);
+    void SetPixUnsafe(int plane, int row, int col, int val);
     void SetPix(int plane, int row, int col, int val);
     void Save(string filePath, ImageFormatType type);
     Span<byte> GetRow(int plane, int row);

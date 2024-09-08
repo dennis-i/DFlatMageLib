@@ -41,10 +41,28 @@ internal partial class ImageImpl : IImage
         _bpp = 0;
     }
 
-    public int GetPix(int plane, int row, int col) => _planes[plane].GetPix(row, col);
+    public int GetPixUnsafe(int plane, int row, int col) => _planes[plane].GetPix(row, col);
 
 
-    public void SetPix(int plane, int row, int col, int val) => _planes[plane].SetPix(row, col, val);
+    public void SetPixUnsafe(int plane, int row, int col, int val) => _planes[plane].SetPix(row, col, val);
+
+
+    public int GetPix(int plane, int row, int col)
+    {
+        ThrowIfNotInRange(plane, NumPlanes);
+        ThrowIfNotInRange(row, _nRows);
+        ThrowIfNotInRange(col, _nCols);
+        return _planes[plane].GetPix(row, col);
+    }
+
+
+    public void SetPix(int plane, int row, int col, int val)
+    {
+        ThrowIfNotInRange(plane, NumPlanes);
+        ThrowIfNotInRange(row, _nRows);
+        ThrowIfNotInRange(col, _nCols);
+        _planes[plane].SetPix(row, col, val);
+    }
 
     public void Save(string filePath, ImageFormatType type)
     {
@@ -52,14 +70,20 @@ internal partial class ImageImpl : IImage
         writer.Write(filePath, this);
     }
 
-    public Span<byte> GetRow(int plane, int row) => _planes[plane].GetRow(row);
+    public Span<byte> GetRow(int plane, int row)
+    {
+        ThrowIfNotInRange(plane, NumPlanes);
+        ThrowIfNotInRange(row, _nRows);
+        return _planes[plane].GetRow(row);
+    }
 
-    public Span<byte> GetPlane(int plane) => _planes[plane].GetData();
+    public Span<byte> GetPlane(int plane)
+    {
+        ThrowIfNotInRange(plane, NumPlanes);
+        return _planes[plane].GetData();
+    }
 
-    
 
-
-  
 }
 
 
