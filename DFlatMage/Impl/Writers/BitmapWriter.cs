@@ -91,13 +91,73 @@ internal class BitmapWriter : IImageWriter
         Action<string, IImage> writeMethod = (image.Bpp, image.NumPlanes) switch
         {
             (8, 1) => GrayscaleWrite,
+            (8, 3) => RgbWrite,
             _ => throw new NotImplementedException()
         };
 
         writeMethod(filePath, image);
     }
 
+    private void RgbWrite(string filePath, IImage image)
+    {
+        int rowSize = image.Width * 3;
 
+        int numBytesForRow = Align(rowSize, 4);
+        int padding = numBytesForRow - image.Width * 3;
+        int imageDataSize = image.Height * numBytesForRow;
+
+        var header = new BitmapHeader();
+
+
+        header.ColorTable = Array.Empty<BitmapColorTable>();
+
+        header.FileSize = BitmapHeader.HeaderSize + header.ColorTable.Length * 4 + imageDataSize;
+        header.Reserved = 0;
+        header.DataOffset = BitmapHeader.HeaderSize + header.ColorTable.Length * 4;
+        header.Size = 40;
+        header.Width = image.Width;
+        header.Height = image.Height;
+        header.Planes = 1;
+        header.Bpp = 24;
+        header.Compression = 0;
+        header.ImageSize = imageDataSize;
+        header.XPixelsPerM = PixPerInchToPixPerM(Resolution);
+        header.YPixelsPerM = PixPerInchToPixPerM(Resolution);
+        header.ColorUsed = 0x100;
+        header.ImportantColors = 0;
+
+
+        Span<byte> rgb = stackalloc byte[3];
+        using FileStream stream = File.OpenWrite(filePath);
+
+        stream.Write(header.HeaderBytes);
+        int lastRow = image.Height - 1;
+        for (int row = lastRow; row >= 0; --row)
+        {
+            Span<byte> rBuff = image.GetRow(0, row);
+            Span<byte> gBuff = image.GetRow(1, row);
+            Span<byte> bBuff = image.GetRow(2, row);
+            for (int i = 0; i < rBuff.Length; ++i)
+            {
+                var nonWhite = rBuff[i] | gBuff[i] | bBuff[i];
+                if (nonWhite == 0)
+                {
+                    rgb[2] = 0xFF;
+                    rgb[1] = 0xFF;
+                    rgb[0] = 0xFF;
+                }
+                else
+                {
+                    rgb[2] = (byte)(rBuff[i]);
+                    rgb[1] = (byte)(gBuff[i]);
+                    rgb[0] = (byte)(bBuff[i]);
+                }
+
+                stream.Write(rgb);
+            }
+            stream.Position += padding;
+        }
+    }
 
 
 

@@ -80,6 +80,37 @@ public class WhenWorkingWithDFlatMage
 
 
     [Fact]
+    public void SaveAsRgbBitmap()
+    {
+        using IImage img = IImage.Create(3, 1000, 2000, Bpp.Bpp8);
+
+        const string filePath = "rgb.bmp";
+
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+
+
+        for (int r = 0; r < 10; ++r)
+        {
+            img.DrawRect(0, new Rect(20 - r, 20 - r, 100 + r * 2, 100 + r * 2), 255);
+            img.DrawRect(1, new Rect(20 - r, 20 - r, 100 + r * 2, 100 + r * 2), 0);
+            img.DrawRect(2, new Rect(20 - r, 20 - r, 100 + r * 2, 100 + r * 2), 0);
+        }
+
+
+
+        for (int r = 100; r < 150; ++r)
+        {
+            img.DrawCirle(0, new Point(400, 400), r, 0);
+            img.DrawCirle(1, new Point(400, 400), r, 0);
+            img.DrawCirle(2, new Point(400, 400), r, 255);
+        }
+
+        img.Save(filePath, ImageFormatType.Bitmap);
+        Assert.True(File.Exists(filePath));
+    }
+
+    [Fact]
     public void SaveAsRaw()
     {
 
