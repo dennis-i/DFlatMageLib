@@ -1,6 +1,6 @@
 ﻿using DFlatMage.Enums;
 using DFlatMage.Interfaces;
-using System.Runtime.CompilerServices;
+
 
 namespace DFlatMage.Impl.ImageImpl;
 internal partial class ImageImpl : IImage
@@ -83,7 +83,7 @@ internal partial class ImageImpl : IImage
         return _planes[plane].GetData();
     }
 
-
+   
 }
 
 

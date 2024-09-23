@@ -5,7 +5,7 @@ using DFlatMage.Interfaces;
 
 namespace Testing;
 
-public class WhenWorkingWithDFlatMage
+public class WhenWorkingWithDFlatMage : TestBase
 {
 
 
@@ -61,8 +61,8 @@ public class WhenWorkingWithDFlatMage
     {
         const string filePath = "img.bmp";
 
-        if (File.Exists(filePath))
-            File.Delete(filePath);
+        if (File.Exists(Path.Combine(ArtifactsPath, filePath)))
+            File.Delete(Path.Combine(ArtifactsPath, filePath));
 
 
         const int size = 117;
@@ -73,9 +73,8 @@ public class WhenWorkingWithDFlatMage
             img.SetPix(0, i, i, 200);
         }
 
-
-        img.Save(filePath, ImageFormatType.Bitmap);
-        Assert.True(File.Exists(filePath));
+        ImageSaveBmp(img, filePath);
+        Assert.True(File.Exists(Path.Combine(ArtifactsPath, filePath)));
     }
 
 
@@ -86,8 +85,8 @@ public class WhenWorkingWithDFlatMage
 
         const string filePath = "rgb.bmp";
 
-        if (File.Exists(filePath))
-            File.Delete(filePath);
+        if (File.Exists(Path.Combine(ArtifactsPath, filePath)))
+            File.Delete(Path.Combine(ArtifactsPath, filePath));
 
 
         for (int r = 0; r < 10; ++r)
@@ -105,9 +104,8 @@ public class WhenWorkingWithDFlatMage
             img.DrawCirle(1, new Point(400, 400), r, 0);
             img.DrawCirle(2, new Point(400, 400), r, 255);
         }
-
-        img.Save(filePath, ImageFormatType.Bitmap);
-        Assert.True(File.Exists(filePath));
+        ImageSaveBmp(img, filePath);
+        Assert.True(File.Exists(Path.Combine(ArtifactsPath, filePath)));
     }
 
     [Fact]
@@ -142,9 +140,8 @@ public class WhenWorkingWithDFlatMage
         using IImage img2 = IImage.Create(1, 100, 100, Bpp.Bpp8);
         img2.DrawLine(p, new Point(10, 10), new Point(50, 50), val);
 
-        img1.Save("lines1.bmp", ImageFormatType.Bitmap);
-        img2.Save("lines2.bmp", ImageFormatType.Bitmap);
-
+        ImageSaveBmp(img1, "lines1.bmp");
+        ImageSaveBmp(img2, "lines2.bmp");
         Assert.Equal(img1, img2);
     }
 
@@ -154,7 +151,7 @@ public class WhenWorkingWithDFlatMage
         using IImage img = IImage.Create(1, 100, 100, Bpp.Bpp8);
 
         img.DrawRect(0, new Rect(5, 5, 20, 40), 200);
-        img.Save("rect.bmp", ImageFormatType.Bitmap);
+        ImageSaveBmp(img, "rect.bmp");
     }
 
     [Fact]
@@ -165,6 +162,21 @@ public class WhenWorkingWithDFlatMage
         Point center = new Point(img.Width >> 1, img.Height >> 1);
         for (int r = 100; r < 150; ++r)
             img.DrawCirle(0, center, r, 100 + r);
-        img.Save("circle.bmp", ImageFormatType.Bitmap);
+
+        ImageSaveBmp(img, "circle.bmp");
+
+    }
+
+    [Fact]
+    public void DrawPath()
+    {
+        using IImage img = IImage.Create(1, 400, 400, Bpp.Bpp8);
+
+        IReadOnlyList<Point> path = [new(50, 50), new(100, 100), new(200, 50), new(50, 50)];
+
+        
+
+        img.DrawPath(0, path, 200);
+        ImageSaveBmp(img, "path.bmp");
     }
 }

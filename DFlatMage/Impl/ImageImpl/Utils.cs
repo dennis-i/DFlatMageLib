@@ -1,5 +1,4 @@
 ﻿using DFlatMage.Interfaces;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace DFlatMage.Impl.ImageImpl;
@@ -23,7 +22,7 @@ internal partial class ImageImpl
                ContentEqual(other._planes);
     }
 
-    private bool ContentEqual(IPlaneData[] other)
+    private bool ContentEqual(IPlaneData[]? other)
     {
         if (other == null) return false;
         if (_planes.Length != other.Length) return false;

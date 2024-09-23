@@ -24,4 +24,5 @@ public interface IImage : IDisposable
     void DrawLine(int plane, Point p1, Point p2, int val) => DrawLine(plane, p1.Y, p1.X, p2.Y, p2.X, val);
     void DrawRect(int plane, Rect rect, int val);
     void DrawCirle(int plane, Point center, int radius, int val);
+    void DrawPath(int plane, IReadOnlyList<Point> path, int val);
 }

@@ -128,6 +128,7 @@ internal class BitmapWriter : IImageWriter
 
 
         Span<byte> rgb = stackalloc byte[3];
+        Span<byte> paddingBytes = stackalloc byte[padding];
         using FileStream stream = File.OpenWrite(filePath);
 
         stream.Write(header.HeaderBytes);
@@ -155,7 +156,7 @@ internal class BitmapWriter : IImageWriter
 
                 stream.Write(rgb);
             }
-            stream.Position += padding;
+            stream.Write(paddingBytes);
         }
     }
 
@@ -195,14 +196,18 @@ internal class BitmapWriter : IImageWriter
 
         using FileStream stream = File.OpenWrite(filePath);
 
+
+        Span<byte> paddingBytes = stackalloc byte[padding];
+
         stream.Write(header.HeaderBytes);
+
         int lastRow = image.Height - 1;
         for (int row = lastRow; row >= 0; --row)
         {
             Span<byte> rowBuff = image.GetRow(0, row);
 
             stream.Write(rowBuff);
-            stream.Position += padding;
+            stream.Write(paddingBytes);
         }
     }
 }
