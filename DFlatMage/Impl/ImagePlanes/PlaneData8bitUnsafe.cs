@@ -1,5 +1,4 @@
 ﻿using DFlatMage.Interfaces;
-using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -22,6 +21,7 @@ internal unsafe class PlaneData8bitUnsafe : IPlaneData
         Marshal.FreeHGlobal(_data);
         _data = IntPtr.Zero;
         _dataSize = 0;
+        _stride = 0;
     }
 
     public int GetPix(int row, int col)
@@ -37,7 +37,7 @@ internal unsafe class PlaneData8bitUnsafe : IPlaneData
         *ptr = (byte)val;
     }
 
-    public Span<byte> GetRow(int row) => new Span<byte>(IntPtr.Add(_data, _stride * row).ToPointer(), _stride);
+    public Span<byte> GetRow(int row) => new(IntPtr.Add(_data, _stride * row).ToPointer(), _stride);
 
-    public Span<byte> GetData() => new Span<byte>(_data.ToPointer(), _dataSize);
+    public Span<byte> GetData() => new(_data.ToPointer(), _dataSize);
 }

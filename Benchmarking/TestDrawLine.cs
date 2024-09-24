@@ -3,7 +3,7 @@ using DFlatMage.Common;
 
 namespace Benchmarking;
 
-[ShortRunJob]
+//[ShortRunJob]
 public class TestDrawLine : BenchmarkBase
 {
 
