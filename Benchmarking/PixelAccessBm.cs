@@ -1,28 +1,13 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
-using DFlatMage.Enums;
-using DFlatMage.Interfaces;
 
 namespace Benchmarking;
 
 //[SimpleJob(RunStrategy.ColdStart, iterationCount: 500)]
 //[MinColumn, MaxColumn, MeanColumn, MedianColumn]
 [MemoryDiagnoser]
-public class PixelAccessBm
+public class PixelAccessBm: BenchmarkBase
 {
-    private IImage? image;
-
-    [GlobalSetup]
-    public void Setup()
-    {
-        image = IImage.Create(1, 1000, 1000, Bpp.Bpp8);
-    }
-
-    [GlobalCleanup]
-    public void Cleanup()
-    {
-        image?.Dispose();
-    }
 
     [Benchmark]
     [Arguments(0, 0)]

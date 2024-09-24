@@ -100,9 +100,9 @@ public class WhenWorkingWithDFlatMage : TestBase
 
         for (int r = 100; r < 150; ++r)
         {
-            img.DrawCirle(0, new Point(400, 400), r, 0);
-            img.DrawCirle(1, new Point(400, 400), r, 0);
-            img.DrawCirle(2, new Point(400, 400), r, 255);
+            img.DrawCircle(0, new Point(400, 400), r, 0);
+            img.DrawCircle(1, new Point(400, 400), r, 0);
+            img.DrawCircle(2, new Point(400, 400), r, 255);
         }
         ImageSaveBmp(img, filePath);
         Assert.True(File.Exists(Path.Combine(ArtifactsPath, filePath)));
@@ -138,10 +138,45 @@ public class WhenWorkingWithDFlatMage : TestBase
         img1.DrawLine(p, new Point(50, 50), new Point(10, 10), val);
 
         using IImage img2 = IImage.Create(1, 100, 100, Bpp.Bpp8);
-        img2.DrawLine(p, new Point(10, 10), new Point(50, 50), val);
+        img2.DrawLine(p, new Point(50, 50), new Point(10, 10), val);
+
 
         ImageSaveBmp(img1, "lines1.bmp");
         ImageSaveBmp(img2, "lines2.bmp");
+        Assert.Equal(img1, img2);
+    }
+
+    [Theory]
+    [InlineData(0, 0, 50, 50)]
+    [InlineData(0, 0, 50, 0)]
+    [InlineData(0, 0, 0, 50)]
+
+    [InlineData(50, 50, 0, 0)]
+    [InlineData(50, 50, 0, 50)]
+    [InlineData(50, 50, 50, 0)]
+
+    [InlineData(50, 50, 80, 20)]
+
+    [InlineData(57, 98, 99, 74)]
+    public void DrawLines(int x1, int y1, int x2, int y2)
+    {
+        const int p = 0;
+        const int val = 100;
+
+        Point start = new(x1, y1);
+        Point end = new(x2, y2);
+
+
+        using IImage img1 = IImage.Create(1, 100, 100, Bpp.Bpp8);
+        img1.DrawLine(p, start, end, val);
+
+        using IImage img2 = IImage.Create(1, 100, 100, Bpp.Bpp8);
+        img2.DrawLine(p, start, end, val);
+
+
+        ImageSaveBmp(img1, "lines1.bmp");
+        ImageSaveBmp(img2, "lines2.bmp");
+
         Assert.Equal(img1, img2);
     }
 
@@ -161,22 +196,78 @@ public class WhenWorkingWithDFlatMage : TestBase
 
         Point center = new Point(img.Width >> 1, img.Height >> 1);
         for (int r = 100; r < 150; ++r)
-            img.DrawCirle(0, center, r, 100 + r);
+            img.DrawCircle(0, center, r, 100 + r);
 
         ImageSaveBmp(img, "circle.bmp");
 
     }
 
+
+    [Fact]
+    public void DrawSnowFlake()
+    {
+        const int size = 500;
+        using IImage img = IImage.Create(3, size, size, Bpp.Bpp8);
+
+        int numEdges = 7;
+        int levels = 3;
+        int edgeLen = size >> 3;
+
+        Point center = new(img.Width >> 1, img.Height >> 1);
+
+        DrawFromCenter(img, center, edgeLen, levels, numEdges);
+        
+        ImageSaveBmp(img, "snowflake.bmp");
+
+    }
+
+    void DrawFromCenter(IImage img, Point center, int edgeLen, int level, int numEdges)
+    {
+        var angle = 2.0 * Math.PI / numEdges;
+
+        if (level == 0)
+            return;
+
+
+        for (int i = 0; i < numEdges; ++i)
+        {
+            var edge = new Point((int)(center.X + Math.Cos(angle * i) * edgeLen),
+                                 (int)(center.Y + Math.Sin(angle * i) * edgeLen));
+
+
+
+            img.DrawLine(0, center, edge, 255 / level);
+            img.DrawLine(1, center, edge, 0 / level);
+            img.DrawLine(2, center, edge, 180 / level);
+            DrawFromCenter(img, edge, (int)(edgeLen * 0.75), level - 1, numEdges);
+        }
+    }
+
     [Fact]
     public void DrawPath()
     {
-        using IImage img = IImage.Create(1, 400, 400, Bpp.Bpp8);
 
-        IReadOnlyList<Point> path = [new(50, 50), new(100, 100), new(200, 50), new(50, 50)];
+        using IImage img1 = IImage.Create(1, 400, 400, Bpp.Bpp8);
+        using IImage img2 = IImage.Create(1, 400, 400, Bpp.Bpp8);
 
-        
+        const int numEdges = 50;
 
-        img.DrawPath(0, path, 200);
-        ImageSaveBmp(img, "path.bmp");
+        Point[] path = new Point[numEdges];
+        for (int i = 0; i < path.Length; ++i)
+        {
+            int x = Random.Shared.Next(0, img2.Width);
+            int y = Random.Shared.Next(0, img2.Height);
+            path[i] = new Point(x, y);
+        }
+        img1.DrawPath(0, path, 200);
+        img2.DrawPath(0, path, 200);
+
+        ImageSaveBmp(img1, "path1.bmp");
+        ImageSaveBmp(img2, "path2.bmp");
+
+
+
+        Assert.Equal(img1, img2);
+
     }
 }

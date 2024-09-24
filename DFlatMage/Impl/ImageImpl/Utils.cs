@@ -31,6 +31,16 @@ internal partial class ImageImpl
         {
             var d1 = _planes[i].GetData();
             var d2 = other[i].GetData();
+
+            if (d1.Length != d2.Length)
+                return false;
+
+            for (int j = 0; j < d1.Length; ++j)
+            {
+                if (d1[j] != d2[j])
+                    return false;
+            }
+
             if (!d1.SequenceEqual(d2))
                 return false;
         }
