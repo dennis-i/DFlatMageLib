@@ -216,7 +216,7 @@ public class WhenWorkingWithDFlatMage : TestBase
         Point center = new(img.Width >> 1, img.Height >> 1);
 
         DrawFromCenter(img, center, edgeLen, levels, numEdges);
-        
+
         ImageSaveBmp(img, "snowflake.bmp");
 
     }
@@ -270,4 +270,38 @@ public class WhenWorkingWithDFlatMage : TestBase
         Assert.Equal(img1, img2);
 
     }
+
+
+    [Fact]
+    public void Crop()
+    {
+        using IImage img = IImage.Create(1, 400, 400, Bpp.Bpp8);
+
+        img.DrawCircle(0, new Point() { X = 200, Y = 200 }, 150, 150);
+        ImageSaveBmp(img, "full.bmp");
+
+        using IImage cropped = img.Crop(new Rect(0, 0, 200, 200));
+        ImageSaveBmp(cropped, "cropped.bmp");
+
+    }
+
+    [Fact]
+    public void Scale()
+    {
+        using IImage img = IImage.Create(3, 50, 50, Bpp.Bpp8);
+
+        for (int i = 0; i < 15; ++i)
+        {
+            img.DrawRect(0..3, new Rect(5 + i, 5 + i, 40 - i * 2, 40 - i * 2), 100 + i * 10);
+        }
+        ImageSaveBmp(img, "sqare.bmp");
+
+
+        using IImage scaled = img.Scale(25, 14);
+
+        ImageSaveBmp(scaled, "scaled.bmp");
+
+
+    }
+
 }

@@ -14,6 +14,14 @@ internal partial class ImageImpl
     }
 
 
+    public void DrawRect(Range planes, Rect rect, int val)
+    {
+        for (int plane = planes.Start.Value; plane < planes.End.Value; ++plane)
+        {
+            DrawRect(plane, rect, val);
+        }
+    }
+
     public void DrawCircle(int plane, Point center, int radius, int val)
     {
         ThrowIfNotInRange(plane, NumPlanes);
