@@ -1,4 +1,6 @@
 ﻿using DFlatMage.Common;
+using DFlatMage.Interfaces;
+using System.Numerics;
 
 namespace DFlatMage.Impl.ImageImpl;
 
@@ -14,12 +16,24 @@ internal partial class ImageImpl
     }
 
 
-    public void DrawRect(Range planes, Rect rect, int val)
+    public void DrawRect(Range planes, Rect rect, IReadOnlyList<int> val)
     {
+        ThrowIfNotInRange(val.Count, NumPlanes + 1);
         for (int plane = planes.Start.Value; plane < planes.End.Value; ++plane)
         {
-            DrawRect(plane, rect, val);
+            DrawRect(plane, rect, val[plane]);
         }
+    }
+
+
+    public void DrawCircle(Range planes, Point center, int radius, IReadOnlyList<int> val)
+    {
+        ThrowIfNotInRange(val.Count, NumPlanes + 1);
+        for (int plane = planes.Start.Value; plane < planes.End.Value; ++plane)
+        {
+            DrawCircle(plane, center, radius, val[plane]);
+        }
+
     }
 
     public void DrawCircle(int plane, Point center, int radius, int val)
@@ -37,7 +51,6 @@ internal partial class ImageImpl
             int newy = (int)(center.Y + Math.Sin(radians) * radius);
 
             SetPixUnsafe(plane, newx, newy, val);
-
         }
     }
 
@@ -48,6 +61,15 @@ internal partial class ImageImpl
 
         for (int i = 1; i < path.Count; ++i)
             DrawLine(plane, path[i - 1].Y, path[i - 1].X, path[i].Y, path[i].X, val);
+    }
+
+
+    public void DrawLine(Range planes, int row1, int col1, int row2, int col2, int val)
+    {
+        for (int plane = planes.Start.Value; plane < planes.End.Value; ++plane)
+        {
+            DrawLine(plane, row1, col1, row2, col2, val);
+        }
     }
 
     public void DrawLine(int plane, int row1, int col1, int row2, int col2, int val)

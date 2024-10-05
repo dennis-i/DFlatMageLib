@@ -81,7 +81,7 @@ public class WhenWorkingWithDFlatMage : TestBase
     [Fact]
     public void SaveAsRgbBitmap()
     {
-        using IImage img = IImage.Create(3, 1000, 2000, Bpp.Bpp8);
+        using IImage img = IImage.Create(3, 1000, 1000, Bpp.Bpp8);
 
         const string filePath = "rgb.bmp";
 
@@ -100,12 +100,16 @@ public class WhenWorkingWithDFlatMage : TestBase
 
         for (int r = 100; r < 150; ++r)
         {
-            img.DrawCircle(0, new Point(400, 400), r, 0);
-            img.DrawCircle(1, new Point(400, 400), r, 0);
-            img.DrawCircle(2, new Point(400, 400), r, 255);
+            img.DrawCircle(0..3, new Point(400, 400), r, [0, 0, 255]);
+
         }
         ImageSaveBmp(img, filePath);
         Assert.True(File.Exists(Path.Combine(ArtifactsPath, filePath)));
+
+
+        using IImage scaled = img.Scale(15, 12);
+        ImageSaveBmp(scaled, "scaled_rgb.bmp");
+
     }
 
     [Fact]
@@ -209,8 +213,8 @@ public class WhenWorkingWithDFlatMage : TestBase
         const int size = 500;
         using IImage img = IImage.Create(3, size, size, Bpp.Bpp8);
 
-        int numEdges = 7;
-        int levels = 3;
+        int numEdges = 9;
+        int levels = 5;
         int edgeLen = size >> 3;
 
         Point center = new(img.Width >> 1, img.Height >> 1);
@@ -221,7 +225,7 @@ public class WhenWorkingWithDFlatMage : TestBase
 
     }
 
-    void DrawFromCenter(IImage img, Point center, int edgeLen, int level, int numEdges)
+    private void DrawFromCenter(IImage img, Point center, int edgeLen, int level, int numEdges)
     {
         var angle = 2.0 * Math.PI / numEdges;
 
@@ -236,9 +240,8 @@ public class WhenWorkingWithDFlatMage : TestBase
 
 
 
-            img.DrawLine(0, center, edge, 255 / level);
-            img.DrawLine(1, center, edge, 0 / level);
-            img.DrawLine(2, center, edge, 180 / level);
+            img.DrawLine(0..3, center, edge, 255 / level);
+
             DrawFromCenter(img, edge, (int)(edgeLen * 0.75), level - 1, numEdges);
         }
     }
@@ -275,9 +278,13 @@ public class WhenWorkingWithDFlatMage : TestBase
     [Fact]
     public void Crop()
     {
-        using IImage img = IImage.Create(1, 400, 400, Bpp.Bpp8);
+        const int thic = 52;
+        using IImage img = IImage.Create(3, 400, 400, Bpp.Bpp8);
+        var center = new Point(img.Width >> 1, img.Height >> 1);
+        for (int i = 0; i < thic; ++i)
+            img.DrawCircle(0..3, center, 150 - i, [150 - i, 0, 0]);
 
-        img.DrawCircle(0, new Point() { X = 200, Y = 200 }, 150, 150);
+
         ImageSaveBmp(img, "full.bmp");
 
         using IImage cropped = img.Crop(new Rect(0, 0, 200, 200));
@@ -292,12 +299,12 @@ public class WhenWorkingWithDFlatMage : TestBase
 
         for (int i = 0; i < 15; ++i)
         {
-            img.DrawRect(0..3, new Rect(5 + i, 5 + i, 40 - i * 2, 40 - i * 2), 100 + i * 10);
+            img.DrawRect(0..3, new Rect(5 + i, 5 + i, 40 - i * 2, 40 - i * 2), [0, 100 + i * 10, 0]);
         }
         ImageSaveBmp(img, "sqare.bmp");
 
 
-        using IImage scaled = img.Scale(25, 14);
+        using IImage scaled = img.Scale(0.5, 1.2);
 
         ImageSaveBmp(scaled, "scaled.bmp");
 
