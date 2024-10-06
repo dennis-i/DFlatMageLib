@@ -105,26 +105,27 @@ internal partial class ImageImpl : IImage
         int newWidth = (int)Math.Round(xFactor * _nCols);
         int newHeight = (int)Math.Round(yFactor * _nRows);
 
-        var result = new ImageImpl(NumPlanes, newHeight, newWidth, _bpp);
 
-        for (int p = 0; p < NumPlanes; ++p)
+        double xFactorMult = 1.0 / xFactor;
+        double yFactorMult = 1.0 / yFactor;
+
+        var result = new ImageImpl(NumPlanes, newHeight, newWidth, _bpp);
+        Parallel.For(0, NumPlanes, p =>
         {
             for (int y = 0; y < newHeight; ++y)
             {
-                int srcY = (int)Math.Floor(y / yFactor);
+                var srcY = Math.Floor(y * yFactorMult);
 
                 for (int x = 0; x < newWidth; ++x)
                 {
-                    int srcX = (int)Math.Floor(x / xFactor);
-                    var pix = GetPix(p, srcY, srcX);
-                    result.SetPix(p, y, x, pix);
+                    var srcX = Math.Floor(x * xFactorMult);
+                    var pix = BilinearInterpolate(p, srcY, srcX);
+                    result.SetPixUnsafe(p, y, x, pix);
                 }
             }
-        }
+        });
         return result;
     }
-
-   
 }
 
 
