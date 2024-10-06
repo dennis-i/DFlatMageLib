@@ -88,7 +88,7 @@ public class WhenWorkingWithDFlatMage : TestBase
         if (File.Exists(Path.Combine(ArtifactsPath, filePath)))
             File.Delete(Path.Combine(ArtifactsPath, filePath));
 
-        for (int i = 20; i < 200; i +=  25)
+        for (int i = 20; i < 200; i += 25)
         {
             for (int r = 0; r < 10; ++r)
             {
@@ -212,18 +212,22 @@ public class WhenWorkingWithDFlatMage : TestBase
     [Fact]
     public void DrawSnowFlake()
     {
-        const int size = 500;
+        const int size = 4000;
         using IImage img = IImage.Create(3, size, size, Bpp.Bpp8);
 
-        int numEdges = 9;
+        int numEdges = 17;
         int levels = 5;
-        int edgeLen = size >> 3;
+        int edgeLen = (int)(size / 7.5);
 
         Point center = new(img.Width >> 1, img.Height >> 1);
 
         DrawFromCenter(img, center, edgeLen, levels, numEdges);
 
         ImageSaveBmp(img, "snowflake.bmp");
+        using IImage scaled = img.Scale(2, 2);
+        using IImage scaled1 = scaled.Scale(0.5, 0.5);
+
+        ImageSaveBmp(scaled1, "snowflake_scaled.bmp");
 
     }
 
@@ -234,15 +238,22 @@ public class WhenWorkingWithDFlatMage : TestBase
         if (level == 0)
             return;
 
+        int[][] color = [
+            [255, 0, 0],
+            [0, 255, 0],
+            [0, 0, 255],
+            [255, 255,0],
+            [255, 0,255],
+        ];
 
         for (int i = 0; i < numEdges; ++i)
         {
-            var edge = new Point((int)(center.X + Math.Cos(angle * i) * edgeLen),
-                                 (int)(center.Y + Math.Sin(angle * i) * edgeLen));
+            var edge = new Point((int)(center.X + Math.Cos(angle * (i + level * 0.1)) * edgeLen),
+                                 (int)(center.Y + Math.Sin(angle * (i + level * 0.1)) * edgeLen));
 
 
 
-            img.DrawLine(0..3, center, edge, 255 / level);
+            img.DrawLine(0..3, center, edge, color[level % color.Length]);
 
             DrawFromCenter(img, edge, (int)(edgeLen * 0.75), level - 1, numEdges);
         }

@@ -72,6 +72,15 @@ internal partial class ImageImpl
         }
     }
 
+    public void DrawLine(Range planes, Point p1, Point p2, IReadOnlyList<int> val)
+    {
+        ThrowIfNotInRange(val.Count, NumPlanes + 1);
+        for (int plane = planes.Start.Value; plane < planes.End.Value; ++plane)
+        {
+            DrawLine(plane, p1.Y, p1.X, p2.Y, p2.X, val[plane]);
+        }
+    }
+
     public void DrawLine(int plane, int row1, int col1, int row2, int col2, int val)
     {
         ThrowIfNotInRange(plane, NumPlanes);
