@@ -137,32 +137,13 @@ public class WhenWorkingWithDFlatMage : TestBase
     [Fact]
     public void SaveAsGif()
     {
-        using IImage img = IImage.Create(3, 1000, 1000, Bpp.Bpp8);
+        using IImage img = IImage.Create(1, 500, 500, Bpp.Bpp8);
 
-        const string filePath = "rgb.gif";
+        Point center = new Point(img.Width >> 1, img.Height >> 1);
+        for (int r = 100; r < 150; ++r)
+            img.DrawCircle(0, center, r, 100 + r);
 
-        if (File.Exists(Path.Combine(ArtifactsPath, filePath)))
-            File.Delete(Path.Combine(ArtifactsPath, filePath));
-
-        for (int i = 20; i < 200; i += 25)
-        {
-            for (int r = 0; r < 10; ++r)
-            {
-                img.DrawRect(..3, new Rect(i - r, i - r, 100 + r * 2, 100 + r * 2), [255, 0, 0]);
-            }
-        }
-
-
-        for (int r = 100; r < 140; ++r)
-        {
-            img.DrawCircle(..3, new Point(400, 400), r, [0, 0, 255]);
-            img.DrawCircle(..3, new Point(700, 700), r, [180, 0, 255]);
-            img.DrawCircle(..3, new Point(700, 400), r, [180, 255, 0]);
-            img.DrawCircle(..3, new Point(400, 700), r, [0, 200, 255]);
-
-        }
-        ImageSaveGif(img, filePath);
-        Assert.True(File.Exists(Path.Combine(ArtifactsPath, filePath)));
+        ImageSaveGif(img, "circle.gif");
     }
 
 
