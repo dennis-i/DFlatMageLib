@@ -1,7 +1,14 @@
 ﻿using DFlatMage.Interfaces;
+using System;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace DFlatMage.Impl.Writers;
+
+
+
+
 
 internal class GifWriter : IImageWriter
 {
@@ -16,37 +23,51 @@ internal class GifWriter : IImageWriter
 
         using FileStream stream = File.Create(filePath);
 
-        WriteHeader(stream);
-        WriteImage(stream);
+        WriteHeader(image, stream);
+        WriteImage(image, stream);
         WriteTrailer(stream);
     }
 
-    static void WriteHeader(Stream stream)
+
+    static void WriteHeader(in IImage img, Stream stream)
     {
 
         var title = Encoding.ASCII.GetBytes("GIF89a");
         stream.Write(title);
 
 
-        byte[] screen_descriptor = new byte[]{
+
+
+        byte[] screen_descriptor = [
             0x64, 0x00, 0x64, 0x00, // Width and height (100x100)
             0xF7,                    // 8 bits per pixel, global color table present
             0x00, 0x00               // Background color index, pixel aspect ratio
-        };
+        ];
+
+        var wBytes = BitConverter.GetBytes((ushort)img.Width);
+        var hBytes = BitConverter.GetBytes((ushort)img.Height);
+
+        screen_descriptor[0] = wBytes[0];
+        screen_descriptor[1] = wBytes[1];
+        screen_descriptor[2] = hBytes[0];
+        screen_descriptor[3] = hBytes[1];
+
+
+
         stream.Write(screen_descriptor);
 
 
-        // Global Color Table (Red, Green, Blue)
-        byte[] color_table = {
-            0xFF, 0x00, 0x00,       // Red
-            0x00, 0xFF, 0x00,       // Green
-            0x00, 0x00, 0xFF,       // Blue
-            0xFF, 0xFF, 0xFF        // White (for padding)
-        };
+        // Global Color Table: 256 entries (3 bytes each), with red as the first color
+        byte[] color_table = new byte[256 * 3];
+        color_table[0] = 0xFF; // Red color
+        for (int i = 3; i < 256 * 3; i += 3)
+        {
+            color_table[i] = color_table[i + 1] = color_table[i + 2] = 0xFF; // White padding
+        }
         stream.Write(color_table);
     }
 
-    static void WriteImage(Stream stream)
+    static void WriteImage(in IImage img, Stream stream)
     {
 
 
@@ -68,6 +89,15 @@ internal class GifWriter : IImageWriter
             0x64, 0x00, 0x64, 0x00, // Image size (width, height: 100x100)
             0x00                    // No local color table, no interlace
         };
+
+        var wBytes = BitConverter.GetBytes((ushort)img.Width);
+        var hBytes = BitConverter.GetBytes((ushort)img.Height);
+
+        image_descriptor[5] = wBytes[0];
+        image_descriptor[6] = wBytes[1];
+        image_descriptor[7] = hBytes[0];
+        image_descriptor[8] = hBytes[1];
+
         stream.Write(image_descriptor);
 
         // Image Data using LZW Encoding
