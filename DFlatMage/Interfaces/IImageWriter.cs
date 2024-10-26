@@ -9,6 +9,7 @@ public interface IImageWriter
     {
         ImageFormatType.Bitmap => new BitmapWriter(),
         ImageFormatType.Raw => new RawWriter(),
+        ImageFormatType.Gif => new GifWriter(),
         _ => throw new NotImplementedException()
     };
 

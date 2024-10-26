@@ -16,4 +16,14 @@ public abstract class TestBase
         string filePath = Path.Combine(ArtifactsPath, fileName);
         img.Save(filePath, ImageFormatType.Bitmap);
     }
+
+    protected void ImageSaveGif(IImage img, string fileName)
+    {
+        if (!Directory.Exists(ArtifactsPath))
+            Directory.CreateDirectory(ArtifactsPath);
+
+
+        string filePath = Path.Combine(ArtifactsPath, fileName);
+        img.Save(filePath, ImageFormatType.Gif);
+    }
 }

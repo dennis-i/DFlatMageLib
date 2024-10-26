@@ -1,7 +1,6 @@
 ﻿using DFlatMage.Interfaces;
 
 namespace DFlatMage.Impl.Writers;
-
 internal class RawWriter : IImageWriter
 {
     public void Write(string filePath, IImage image)
