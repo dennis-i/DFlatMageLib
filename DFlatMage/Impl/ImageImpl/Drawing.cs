@@ -50,7 +50,7 @@ internal partial class ImageImpl
             int newx = (int)(center.X + Math.Cos(radians) * radius);
             int newy = (int)(center.Y + Math.Sin(radians) * radius);
 
-            SetPixUnsafe(plane, newx, newy, val);
+            SetPixUnsafe(plane, newy, newx, val);
         }
     }
 

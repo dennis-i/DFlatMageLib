@@ -137,11 +137,16 @@ public class WhenWorkingWithDFlatMage : TestBase
     [Fact]
     public void SaveAsGif()
     {
-        using IImage img = IImage.Create(1, 500, 500, Bpp.Bpp8);
+        using IImage img = IImage.Create(1, 1000, 1000, Bpp.Bpp8);
 
-        Point center = new Point(img.Width >> 1, img.Height >> 1);
-        for (int r = 100; r < 150; ++r)
-            img.DrawCircle(0, center, r, 100 + r);
+        Point center = new(img.Width >> 1, img.Height >> 1);
+        for (int r = 0; r < 50; ++r)
+        {
+            img.DrawCircle(0, center, r + 50, 50);
+            img.DrawCircle(0, center, r + 100, 100);
+            img.DrawCircle(0, center, r + 150, 150);
+
+        }
 
         ImageSaveGif(img, "circle.gif");
     }
@@ -237,10 +242,12 @@ public class WhenWorkingWithDFlatMage : TestBase
         DrawFromCenter(img, center, edgeLen, levels, numEdges);
 
         ImageSaveBmp(img, "snowflake.bmp");
+        ImageSaveGif(img, "snowflake.gif");
         using IImage scaled = img.Scale(2, 2);
         using IImage scaled1 = scaled.Scale(0.5, 0.5);
 
         ImageSaveBmp(scaled1, "snowflake_scaled.bmp");
+
 
     }
 

@@ -25,7 +25,17 @@ internal class GifWriter : IImageWriter
         using FileStream stream = File.Create(filePath);
 
         WriteHeader(image, stream);
-        WriteImage(image, stream);
+        WriteAppExt(stream);
+        WriteImageFrame(new Point(0, 0), image, stream);
+        WriteImageFrame(new Point(10, 10), image, stream);
+        WriteImageFrame(new Point(20, 10), image, stream);
+        WriteImageFrame(new Point(30, 30), image, stream);
+        WriteImageFrame(new Point(40, 50), image, stream);
+        WriteImageFrame(new Point(30, 40), image, stream);
+        WriteImageFrame(new Point(20, 20), image, stream);
+        WriteImageFrame(new Point(10, 10), image, stream);
+
+
         WriteTrailer(stream);
     }
 
@@ -37,7 +47,7 @@ internal class GifWriter : IImageWriter
         numspan.CopyTo(bytes);
     }
 
-    static void WriteHeader(in IImage img, Stream stream)
+    private static void WriteHeader(in IImage img, Stream stream)
     {
 
         var title = Encoding.ASCII.GetBytes("GIF89a");
@@ -98,6 +108,27 @@ internal class GifWriter : IImageWriter
         stream.Write(color_table);
     }
 
+    private static void WriteAppExt(Stream stream)
+    {
+        ushort loopCount = 0;
+
+        stream.WriteByte(0x21);                // Extension Introducer
+        stream.WriteByte(0xFF);                // Application Extension Label
+        stream.WriteByte(0x0B);                // Block Size (11 bytes)
+
+        // Application Identifier ("NETSCAPE2.0")
+        stream.Write(Encoding.ASCII.GetBytes("NETSCAPE2.0"), 0, 11);
+
+        stream.WriteByte(0x03);                // Sub-block Size (3 bytes)
+        stream.WriteByte(0x01);                // Sub-block ID (Loop Count)
+
+        // Loop Count (0 for infinite loop, or specify any other number)
+        stream.WriteByte((byte)(loopCount & 0xFF));       // Low byte
+        stream.WriteByte((byte)((loopCount >> 8) & 0xFF)); // High byte
+
+        stream.WriteByte(0x00);                // Block Terminator
+    }
+
     public static Span<byte> LzwCompress(ReadOnlySpan<byte> input)
     {
         // Step 1: Initialize dictionary with single-byte entries
@@ -141,7 +172,7 @@ internal class GifWriter : IImageWriter
 
     }
 
-    static void WriteImage(in IImage img, Stream stream)
+    static void WriteImageFrame(in Point origin, in IImage img, Stream stream)
     {
 
         //Bit 0   Local Color Table Flag
@@ -153,16 +184,15 @@ internal class GifWriter : IImageWriter
 
         bool localColorTableFlag = false;
         bool intelaceFlag = false;
-        bool sortFlag = true;
-        //int localColorTableSize = img.Bpp - 1;
+        bool sortFlag = false;
         int localColorTableSize = 0;
 
         byte packed = (byte)(localColorTableFlag ? 0x01 : 0x00);
         packed |= (byte)(intelaceFlag ? 0x02 : 0x00);
         packed |= (byte)(sortFlag ? 0x04 : 0x00);
         packed |= (byte)((0x07 & localColorTableSize) << 5);
-        ushort left = 0;
-        ushort top = 0;
+        ushort left = (ushort)origin.X;
+        ushort top = (ushort)origin.Y;
 
 
         Span<byte> image_descriptor = stackalloc byte[10];
@@ -182,11 +212,10 @@ internal class GifWriter : IImageWriter
 
 
         stream.WriteByte(0x08); // LZW Minimum Code Size (8 for simplicity)
+        GifLzwEncoder enc = new(img.Bpp);
 
+        Span<byte> sub = enc.Encode(img.GetPlane(0));
 
-        var lzw = LzwCompress(img.GetPlane(0));
-
-        Span<byte> sub = lzw;
         while (!sub.IsEmpty)
         {
             int size = Math.Min(255, sub.Length);
@@ -195,15 +224,6 @@ internal class GifWriter : IImageWriter
             stream.Write(data);
             sub = sub.Slice(size);
         }
-
-
-
-
-        //    // Compressed data for a 100x100 red image (index 0 in color table)
-        //    byte[] image_data = {
-        //    0x81, 0x00, 0x01, 0x01, // Image data with LZW-encoded red pixels
-        //    0x00                    // Block Terminator
-        //};
 
 
         stream.WriteByte(0x00);
@@ -216,3 +236,147 @@ internal class GifWriter : IImageWriter
     }
 
 }
+
+public class GifLzwEncoder
+{
+    private const int ClearCode = 256;
+    private const int EoiCode = 257;
+    private readonly int initialCodeSize;
+    private int codeSize;
+    private int nextCode;
+    private readonly Dictionary<string, int> dictionary = new();
+
+    public GifLzwEncoder(int bitDepth)
+    {
+        initialCodeSize = bitDepth + 1;
+        ResetDictionary();
+    }
+
+    private void ResetDictionary()
+    {
+        dictionary.Clear();
+        for (int i = 0; i < 256; i++)
+        {
+            dictionary[i.ToString()] = i;
+        }
+        dictionary[ClearCode.ToString()] = ClearCode;
+        dictionary[EoiCode.ToString()] = EoiCode;
+
+        codeSize = initialCodeSize;
+        nextCode = EoiCode + 1;
+    }
+
+
+
+
+    public byte[] Encode(ReadOnlySpan<byte> input)
+    {
+        using (var output = new MemoryStream())
+        {
+            var bitWriter = new BitWriter(output);
+            bitWriter.Write(ClearCode, codeSize);
+
+            string currentSequence = input[0].ToString(); // Initialize with the first pixel
+            for (int i = 1; i < input.Length; ++i)
+
+            {
+                var pixel = input[i];
+                string newSequence = currentSequence + "," + pixel;
+
+                if (dictionary.ContainsKey(newSequence))
+                {
+                    currentSequence = newSequence;
+                }
+                else
+                {
+                    bitWriter.Write(dictionary[currentSequence], codeSize);
+
+                    if (nextCode < (1 << codeSize))
+                    {
+                        dictionary[newSequence] = nextCode++;
+                    }
+                    else if (codeSize < 12)
+                    {
+                        codeSize++;
+                        dictionary[newSequence] = nextCode++;
+                    }
+                    else
+                    {
+                        bitWriter.Write(ClearCode, codeSize);
+                        ResetDictionary();
+                        codeSize = initialCodeSize;
+                        nextCode = EoiCode + 1;
+                        dictionary[newSequence] = nextCode++;
+                    }
+
+                    currentSequence = pixel.ToString();
+                }
+            }
+
+            if (!string.IsNullOrEmpty(currentSequence))
+            {
+                bitWriter.Write(dictionary[currentSequence], codeSize);
+            }
+
+            bitWriter.Write(EoiCode, codeSize);
+            bitWriter.Flush();
+
+            return output.ToArray();
+        }
+    }
+}
+
+public class BitWriter
+{
+    private readonly Stream output;
+    private int currentByte;
+    private int bitPosition;
+
+    public BitWriter(Stream output)
+    {
+        this.output = output;
+    }
+
+    public void Write(int value, int bitCount)
+    {
+        for (int i = 0; i < bitCount; i++)
+        {
+            int bit = (value >> i) & 1;
+            currentByte |= bit << bitPosition;
+
+            bitPosition++;
+
+            if (bitPosition == 8)
+            {
+                output.WriteByte((byte)currentByte);
+                currentByte = 0;
+                bitPosition = 0;
+            }
+        }
+    }
+
+    public void Flush()
+    {
+        if (bitPosition > 0)
+        {
+            output.WriteByte((byte)currentByte);
+        }
+    }
+}
+
+//// Example usage:
+//public class Program
+//{
+//    public static void Main()
+//    {
+//        // Example 8-bit bitmap data
+//        byte[] bitmapData = new byte[] { /* Insert raw 8-bit color indices here */ };
+
+//        var encoder = new GifLzwEncoder(bitDepth: 8);
+//        byte[] lzwData = encoder.Encode(bitmapData);
+
+//        // The lzwData now contains the LZW-encoded data suitable for use in a GIF file
+//        Console.WriteLine("LZW Encoded Data Length: " + lzwData.Length);
+//    }
+//}
+
