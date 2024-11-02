@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.Net.Sockets;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -129,48 +130,137 @@ internal class GifWriter : IImageWriter
         stream.WriteByte(0x00);                // Block Terminator
     }
 
-    public static Span<byte> LzwCompress(ReadOnlySpan<byte> input)
+    private static Span<byte> ConvertToByteArray(List<int> output)
     {
-        // Step 1: Initialize dictionary with single-byte entries
-        var dictionary = new Dictionary<string, int>();
-        for (int i = 0; i < 256; i++)
-            dictionary.Add(((char)i).ToString(), i);
-
-        string current = string.Empty;
-        var compressedData = new List<int>();
-        int dictSize = 256;
-
-        // Step 2: Process each byte
-        foreach (byte symbol in input)
+        const int MaxCodeSize = 12;
+        using (var ms = new MemoryStream())
         {
-            string combined = current + (char)symbol;
-            if (dictionary.ContainsKey(combined))
+            int currentCodeSize = 9; // Starting code size
+            int maxCode = (1 << currentCodeSize) - 1; // Maximum code value for the current code size
+            int bitBuffer = 0; // Bit buffer to hold the packed bits
+            int bitCount = 0; // Number of bits in the buffer
+
+            foreach (int code in output)
             {
-                current = combined;
+                // Add the new code to the bit buffer
+                bitBuffer |= (code << bitCount);
+                bitCount += currentCodeSize;
+
+                // While there are at least 8 bits in the buffer, write bytes to the output
+                while (bitCount >= 8)
+                {
+                    ms.WriteByte((byte)(bitBuffer & 0xFF)); // Write the lowest 8 bits
+                    bitBuffer >>= 8; // Remove the byte we just wrote
+                    bitCount -= 8; // Reduce the bit count
+                }
+
+                // If we reach the maximum code value for the current code size, increase the size
+                if (code >= maxCode)
+                {
+                    if (currentCodeSize < MaxCodeSize)
+                    {
+                        currentCodeSize++;
+                        maxCode = (1 << currentCodeSize) - 1; // Update maximum code value
+                    }
+                }
+            }
+
+            // Write any remaining bits in the buffer to the output
+            if (bitCount > 0)
+            {
+                ms.WriteByte((byte)(bitBuffer & 0xFF)); // Write remaining bits
+            }
+
+            return ms.ToArray();
+        }
+    }
+
+
+    private static Span<byte> LzwEncode(ReadOnlySpan<byte> input)
+    {
+
+        const int ClearCode = 256;
+        const int EoiCode = 257;
+
+
+
+        var dictionary = new Dictionary<string, int>();
+        var output = new List<int>();
+        int codeSize = 9; // Start with 9 bits
+        int nextCode = 258; // Next code value (256 for ClearCode, 257 for EOI)
+
+
+
+
+        void reset()
+        {
+            codeSize = 9; // Start with 9 bits
+            nextCode = 258; // Next code value (256 for ClearCode, 257 for EOI)
+            dictionary.Clear();
+
+            // Initialize dictionary with single byte values
+            for (int i = 0; i < 256; i++)
+            {
+                dictionary.Add(i.ToString(), i);
+            }
+        }
+
+        reset();
+
+        string currentSequence = "";
+        foreach (var pixel in input)
+        {
+            string newSequence = currentSequence + pixel;
+
+            // Check if the new sequence exists in the dictionary
+            if (dictionary.TryGetValue(newSequence, out int code))
+            {
+                currentSequence = newSequence; // Continue building the sequence
             }
             else
             {
-                compressedData.Add(dictionary[current]);
-                dictionary[combined] = dictSize++;
-                current = ((char)symbol).ToString();
+                // Output the code for the current sequence
+                if (dictionary.TryGetValue(currentSequence, out int currentCode))
+                {
+                    output.Add(currentCode);
+                }
+                else
+                {
+                    throw new KeyNotFoundException($"Key '{currentSequence}' not found in dictionary.");
+                }
+
+                // Add new sequence to the dictionary
+                if (nextCode < (1 << codeSize) && nextCode < 4096)
+                {
+                    dictionary[newSequence] = nextCode++;
+                }
+
+                // Reset if the dictionary is full
+                if (nextCode >= (1 << codeSize) || nextCode >= 4096)
+                {
+                    output.Add(ClearCode); // Clear code to reset the dictionary
+                    reset();
+                }
+
+                // Start a new sequence with the current pixel
+                currentSequence = pixel.ToString();
             }
         }
 
-        // Add the last current code to compressed data
-        if (!string.IsNullOrEmpty(current))
-            compressedData.Add(dictionary[current]);
-
-
-        // Convert the list of integers to a byte array
-        using var ms = new MemoryStream();
-
-        foreach (int code in compressedData)
+        // Output the last sequence
+        if (!string.IsNullOrEmpty(currentSequence) && dictionary.TryGetValue(currentSequence, out int lastCode))
         {
-            ms.Write(BitConverter.GetBytes((ushort)code)); // GIF typically uses 12-bit codes
+            output.Add(lastCode);
         }
-        return ms.GetBuffer();
 
+        // Add End of Information code
+        output.Add(EoiCode);
+
+        // Convert to byte array
+        return ConvertToByteArray(output);
     }
+
+
 
     static void WriteImageFrame(in Point origin, in IImage img, Stream stream)
     {
@@ -212,9 +302,8 @@ internal class GifWriter : IImageWriter
 
 
         stream.WriteByte(0x08); // LZW Minimum Code Size (8 for simplicity)
-        GifLzwEncoder enc = new(img.Bpp);
 
-        Span<byte> sub = enc.Encode(img.GetPlane(0));
+        Span<byte> sub = LzwEncode(img.GetPlane(0));
 
         while (!sub.IsEmpty)
         {
@@ -236,147 +325,4 @@ internal class GifWriter : IImageWriter
     }
 
 }
-
-public class GifLzwEncoder
-{
-    private const int ClearCode = 256;
-    private const int EoiCode = 257;
-    private readonly int initialCodeSize;
-    private int codeSize;
-    private int nextCode;
-    private readonly Dictionary<string, int> dictionary = new();
-
-    public GifLzwEncoder(int bitDepth)
-    {
-        initialCodeSize = bitDepth + 1;
-        ResetDictionary();
-    }
-
-    private void ResetDictionary()
-    {
-        dictionary.Clear();
-        for (int i = 0; i < 256; i++)
-        {
-            dictionary[i.ToString()] = i;
-        }
-        dictionary[ClearCode.ToString()] = ClearCode;
-        dictionary[EoiCode.ToString()] = EoiCode;
-
-        codeSize = initialCodeSize;
-        nextCode = EoiCode + 1;
-    }
-
-
-
-
-    public byte[] Encode(ReadOnlySpan<byte> input)
-    {
-        using (var output = new MemoryStream())
-        {
-            var bitWriter = new BitWriter(output);
-            bitWriter.Write(ClearCode, codeSize);
-
-            string currentSequence = input[0].ToString(); // Initialize with the first pixel
-            for (int i = 1; i < input.Length; ++i)
-
-            {
-                var pixel = input[i];
-                string newSequence = currentSequence + "," + pixel;
-
-                if (dictionary.ContainsKey(newSequence))
-                {
-                    currentSequence = newSequence;
-                }
-                else
-                {
-                    bitWriter.Write(dictionary[currentSequence], codeSize);
-
-                    if (nextCode < (1 << codeSize))
-                    {
-                        dictionary[newSequence] = nextCode++;
-                    }
-                    else if (codeSize < 12)
-                    {
-                        codeSize++;
-                        dictionary[newSequence] = nextCode++;
-                    }
-                    else
-                    {
-                        bitWriter.Write(ClearCode, codeSize);
-                        ResetDictionary();
-                        codeSize = initialCodeSize;
-                        nextCode = EoiCode + 1;
-                        dictionary[newSequence] = nextCode++;
-                    }
-
-                    currentSequence = pixel.ToString();
-                }
-            }
-
-            if (!string.IsNullOrEmpty(currentSequence))
-            {
-                bitWriter.Write(dictionary[currentSequence], codeSize);
-            }
-
-            bitWriter.Write(EoiCode, codeSize);
-            bitWriter.Flush();
-
-            return output.ToArray();
-        }
-    }
-}
-
-public class BitWriter
-{
-    private readonly Stream output;
-    private int currentByte;
-    private int bitPosition;
-
-    public BitWriter(Stream output)
-    {
-        this.output = output;
-    }
-
-    public void Write(int value, int bitCount)
-    {
-        for (int i = 0; i < bitCount; i++)
-        {
-            int bit = (value >> i) & 1;
-            currentByte |= bit << bitPosition;
-
-            bitPosition++;
-
-            if (bitPosition == 8)
-            {
-                output.WriteByte((byte)currentByte);
-                currentByte = 0;
-                bitPosition = 0;
-            }
-        }
-    }
-
-    public void Flush()
-    {
-        if (bitPosition > 0)
-        {
-            output.WriteByte((byte)currentByte);
-        }
-    }
-}
-
-//// Example usage:
-//public class Program
-//{
-//    public static void Main()
-//    {
-//        // Example 8-bit bitmap data
-//        byte[] bitmapData = new byte[] { /* Insert raw 8-bit color indices here */ };
-
-//        var encoder = new GifLzwEncoder(bitDepth: 8);
-//        byte[] lzwData = encoder.Encode(bitmapData);
-
-//        // The lzwData now contains the LZW-encoded data suitable for use in a GIF file
-//        Console.WriteLine("LZW Encoded Data Length: " + lzwData.Length);
-//    }
-//}
 

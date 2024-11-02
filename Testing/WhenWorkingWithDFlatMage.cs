@@ -140,12 +140,9 @@ public class WhenWorkingWithDFlatMage : TestBase
         using IImage img = IImage.Create(1, 1000, 1000, Bpp.Bpp8);
 
         Point center = new(img.Width >> 1, img.Height >> 1);
-        for (int r = 0; r < 50; ++r)
+        for (int r = 0; r < 150; ++r)
         {
-            img.DrawCircle(0, center, r + 50, 50);
-            img.DrawCircle(0, center, r + 100, 100);
-            img.DrawCircle(0, center, r + 150, 150);
-
+            img.DrawCircle(0, center, r + 50, r + 50);
         }
 
         ImageSaveGif(img, "circle.gif");
@@ -231,7 +228,7 @@ public class WhenWorkingWithDFlatMage : TestBase
     public void DrawSnowFlake()
     {
         const int size = 4000;
-        using IImage img = IImage.Create(3, size, size, Bpp.Bpp8);
+        using IImage img = IImage.Create(1, size, size, Bpp.Bpp8);
 
         int numEdges = 17;
         int levels = 5;
@@ -258,13 +255,15 @@ public class WhenWorkingWithDFlatMage : TestBase
         if (level == 0)
             return;
 
-        int[][] color = [
-            [255, 0, 0],
-            [0, 255, 0],
-            [0, 0, 255],
-            [255, 255,0],
-            [255, 0,255],
-        ];
+        //int[][] color = [
+        //    [255, 0, 0],
+        //    [0, 255, 0],
+        //    [0, 0, 255],
+        //    [255, 255,0],
+        //    [255, 0,255],
+        //];
+
+        int[][] color = [[50], [100], [150], [200]];
 
         for (int i = 0; i < numEdges; ++i)
         {
@@ -273,7 +272,7 @@ public class WhenWorkingWithDFlatMage : TestBase
 
 
 
-            img.DrawLine(0..3, center, edge, color[level % color.Length]);
+            img.DrawLine(0..1, center, edge, color[level % color.Length]);
 
             DrawFromCenter(img, edge, (int)(edgeLen * 0.75), level - 1, numEdges);
         }
@@ -300,6 +299,7 @@ public class WhenWorkingWithDFlatMage : TestBase
 
         ImageSaveBmp(img1, "path1.bmp");
         ImageSaveBmp(img2, "path2.bmp");
+        ImageSaveGif(img2, "path2.gif");
 
 
 
