@@ -27,14 +27,11 @@ internal class GifWriter : IImageWriter
 
         WriteHeader(image, stream);
         WriteAppExt(stream);
-        WriteImageFrame(new Point(0, 0), image, stream);
-        WriteImageFrame(new Point(10, 10), image, stream);
-        WriteImageFrame(new Point(20, 10), image, stream);
-        WriteImageFrame(new Point(30, 30), image, stream);
-        WriteImageFrame(new Point(40, 50), image, stream);
-        WriteImageFrame(new Point(30, 40), image, stream);
-        WriteImageFrame(new Point(20, 20), image, stream);
-        WriteImageFrame(new Point(10, 10), image, stream);
+        for (int p = 0; p < image.NumPlanes; p++)
+        {
+            WriteImageFrame(image, p, stream);
+        }
+
 
 
         WriteTrailer(stream);
@@ -102,8 +99,8 @@ internal class GifWriter : IImageWriter
         for (int i = 0; i < numberOfGlobalColorTableEntries; i++)
         {
             color_table[i * 3] = (byte)(0xFF - i);
-            color_table[i * 3 + 1] = 0xFF;
-            color_table[i * 3 + 2] = 0xFF;
+            color_table[i * 3 + 1] = (byte)(0xFF - i);
+            color_table[i * 3 + 2] = (byte)(0xFF - i);
 
         }
         stream.Write(color_table);
@@ -262,7 +259,7 @@ internal class GifWriter : IImageWriter
 
 
 
-    static void WriteImageFrame(in Point origin, in IImage img, Stream stream)
+    static void WriteImageFrame(in IImage img, int plane, Stream stream)
     {
 
         //Bit 0   Local Color Table Flag
@@ -281,8 +278,8 @@ internal class GifWriter : IImageWriter
         packed |= (byte)(intelaceFlag ? 0x02 : 0x00);
         packed |= (byte)(sortFlag ? 0x04 : 0x00);
         packed |= (byte)((0x07 & localColorTableSize) << 5);
-        ushort left = (ushort)origin.X;
-        ushort top = (ushort)origin.Y;
+        ushort left = 0;
+        ushort top = 0;
 
 
         Span<byte> image_descriptor = stackalloc byte[10];
@@ -298,12 +295,9 @@ internal class GifWriter : IImageWriter
 
         stream.Write(image_descriptor);
 
-
-
-
         stream.WriteByte(0x08); // LZW Minimum Code Size (8 for simplicity)
 
-        Span<byte> sub = LzwEncode(img.GetPlane(0));
+        Span<byte> sub = LzwEncode(img.GetPlane(plane));
 
         while (!sub.IsEmpty)
         {
@@ -313,10 +307,7 @@ internal class GifWriter : IImageWriter
             stream.Write(data);
             sub = sub.Slice(size);
         }
-
-
         stream.WriteByte(0x00);
-
     }
 
     static void WriteTrailer(Stream stream)
