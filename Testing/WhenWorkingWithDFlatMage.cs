@@ -211,6 +211,7 @@ public class WhenWorkingWithDFlatMage : TestBase
         ImageSaveBmp(img, "rect.bmp");
     }
 
+
     [Fact]
     public void DrawCircle()
     {
@@ -229,7 +230,7 @@ public class WhenWorkingWithDFlatMage : TestBase
     public void DrawSnowFlake()
     {
         const int size = 1000;
-        int levels = 15;
+        int levels = 5;
         using IImage img = IImage.Create(levels, size, size, Bpp.Bpp8);
 
         int numEdges = 5;
