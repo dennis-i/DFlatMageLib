@@ -92,13 +92,13 @@ internal class BitmapWriter : IImageWriter
         {
             (8, 1) => GrayscaleWrite,
             (8, 3) => RgbWrite,
-            _ => throw new NotImplementedException()
+            _ => throw new NotSupportedImageException(image)
         };
 
         writeMethod(filePath, image);
     }
 
-    private void RgbWrite(string filePath, IImage image)
+    private static void RgbWrite(string filePath, IImage image)
     {
         int rowSize = image.Width * 3;
 
@@ -160,9 +160,7 @@ internal class BitmapWriter : IImageWriter
         }
     }
 
-
-
-    private void GrayscaleWrite(string filePath, IImage image)
+    private static void GrayscaleWrite(string filePath, IImage image)
     {
         int rowSize = image.Width;
 

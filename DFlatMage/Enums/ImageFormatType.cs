@@ -3,5 +3,6 @@
 public enum ImageFormatType
 {
     Raw,
-    Bitmap
+    Bitmap,
+    Gif
 }

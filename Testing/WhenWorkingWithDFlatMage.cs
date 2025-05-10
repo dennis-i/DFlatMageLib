@@ -111,6 +111,7 @@ public class WhenWorkingWithDFlatMage : TestBase
 
         using IImage scaled = img.Scale(5, 4);
         ImageSaveBmp(scaled, "scaled_rgb.bmp");
+        ImageSaveGif(scaled, "scaled_rgb.gif");
 
     }
 
@@ -133,6 +134,21 @@ public class WhenWorkingWithDFlatMage : TestBase
         img.Save(filePath, ImageFormatType.Raw);
         Assert.True(File.Exists(filePath));
     }
+
+    [Fact]
+    public void SaveAsGif()
+    {
+        using IImage img = IImage.Create(1, 1000, 1000, Bpp.Bpp8);
+
+        Point center = new(img.Width >> 1, img.Height >> 1);
+        for (int r = 0; r < 150; ++r)
+        {
+            img.DrawCircle(0, center, r + 50, r + 50);
+        }
+
+        ImageSaveGif(img, "circle.gif");
+    }
+
 
     [Fact]
     public void DrawLine()
@@ -195,6 +211,7 @@ public class WhenWorkingWithDFlatMage : TestBase
         ImageSaveBmp(img, "rect.bmp");
     }
 
+
     [Fact]
     public void DrawCircle()
     {
@@ -212,23 +229,21 @@ public class WhenWorkingWithDFlatMage : TestBase
     [Fact]
     public void DrawSnowFlake()
     {
-        const int size = 4000;
-        using IImage img = IImage.Create(3, size, size, Bpp.Bpp8);
-
-        int numEdges = 17;
+        const int size = 1000;
         int levels = 5;
+        using IImage img = IImage.Create(levels, size, size, Bpp.Bpp8);
+
+        int numEdges = 5;
+
         int edgeLen = (int)(size / 7.5);
 
         Point center = new(img.Width >> 1, img.Height >> 1);
 
         DrawFromCenter(img, center, edgeLen, levels, numEdges);
 
-        ImageSaveBmp(img, "snowflake.bmp");
-        using IImage scaled = img.Scale(2, 2);
-        using IImage scaled1 = scaled.Scale(0.5, 0.5);
-
-        ImageSaveBmp(scaled1, "snowflake_scaled.bmp");
-
+      
+        ImageSaveGif(img, "snowflake.gif");
+      
     }
 
     private void DrawFromCenter(IImage img, Point center, int edgeLen, int level, int numEdges)
@@ -238,13 +253,15 @@ public class WhenWorkingWithDFlatMage : TestBase
         if (level == 0)
             return;
 
-        int[][] color = [
-            [255, 0, 0],
-            [0, 255, 0],
-            [0, 0, 255],
-            [255, 255,0],
-            [255, 0,255],
-        ];
+        //int[][] color = [
+        //    [255, 0, 0],
+        //    [0, 255, 0],
+        //    [0, 0, 255],
+        //    [255, 255,0],
+        //    [255, 0,255],
+        //];
+
+        int[][] color = [[50], [100], [150], [200]];
 
         for (int i = 0; i < numEdges; ++i)
         {
@@ -253,7 +270,7 @@ public class WhenWorkingWithDFlatMage : TestBase
 
 
 
-            img.DrawLine(0..3, center, edge, color[level % color.Length]);
+            img.DrawLine(level - 1, center, edge, 255);
 
             DrawFromCenter(img, edge, (int)(edgeLen * 0.75), level - 1, numEdges);
         }
@@ -280,6 +297,7 @@ public class WhenWorkingWithDFlatMage : TestBase
 
         ImageSaveBmp(img1, "path1.bmp");
         ImageSaveBmp(img2, "path2.bmp");
+        ImageSaveGif(img2, "path2.gif");
 
 
 
