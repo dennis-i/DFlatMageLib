@@ -36,6 +36,35 @@ internal partial class ImageImpl
 
     }
 
+    public void DrawCurve(int plane, Point point1, Point point2, Point point3, int val)
+    {
+        ThrowIfNotInRange(plane, NumPlanes);
+        //draw a curve between point1 and point2 using point3 as control point
+
+        Point previousPoint = point1;
+
+        for (double t = 0; t <= 1.0; t += 0.01)
+        {
+            // Quadratic Bézier curve formula: B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
+            double oneMinusT = 1.0 - t;
+            double oneMinusTSquared = oneMinusT * oneMinusT;
+            double tSquared = t * t;
+            double middleTerm = 2.0 * oneMinusT * t;
+
+            int x = (int)(oneMinusTSquared * point1.X + middleTerm * point2.X + tSquared * point3.X);
+            int y = (int)(oneMinusTSquared * point1.Y + middleTerm * point2.Y + tSquared * point3.Y);
+
+            Point currentPoint = (x, y);
+
+            if (t > 0)
+            {
+                DrawLine(plane, previousPoint.Y, previousPoint.X, currentPoint.Y, currentPoint.X, val);
+            }
+
+            previousPoint = currentPoint;
+        }
+    }
+
     public void DrawCircle(int plane, Point center, int radius, int val)
     {
         ThrowIfNotInRange(plane, NumPlanes);

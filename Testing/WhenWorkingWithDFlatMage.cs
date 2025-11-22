@@ -77,6 +77,25 @@ public class WhenWorkingWithDFlatMage : TestBase
         Assert.True(File.Exists(Path.Combine(ArtifactsPath, filePath)));
     }
 
+    [Fact]
+    public void DrawCurve()
+    {
+        using IImage img = IImage.Create(1, 200, 200, Bpp.Bpp8);
+        Point a = (5, 5);
+        Point b = (50, 5);
+        Point c = (50, 50);
+        Point d = (100, 50);
+        img.DrawCurve(0, a, b, c, 200);
+        img.DrawCurve(0, b, c, d, 200);
+        
+        const string filePath = "curve.bmp";
+
+        if (File.Exists(Path.Combine(ArtifactsPath, filePath)))
+            File.Delete(Path.Combine(ArtifactsPath, filePath));
+        
+        ImageSaveBmp(img, filePath);
+        Assert.True(File.Exists(Path.Combine(ArtifactsPath, filePath)));
+    }
 
     [Fact]
     public void SaveAsRgbBitmap()

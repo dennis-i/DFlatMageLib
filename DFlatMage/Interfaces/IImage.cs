@@ -32,4 +32,5 @@ public interface IImage : IDisposable
     void DrawPath(int plane, IReadOnlyList<Point> path, int val);
     IImage Crop(Rect rect);
     IImage Scale(double xFactor, double yFactor);
+    void DrawCurve(int plane, Point point1, Point point2, Point point3, int val);
 }
